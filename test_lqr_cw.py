@@ -1,13 +1,12 @@
 import numpy as np
-
+import matplotlib.pyplot as plt 
 from models.orbital_models import d_clohessy_wilthsire, clohessy_wilthsire
 from dynamics.integrator import rk4
-import numpy as np
-import matplotlib.pyplot as plt 
+
 
 ## Simulation parameters
 dt = 0.1          # seconds
-tspan = 25* 5.0 * 60.0  # seconds
+tspan = 5.0 * 60.0  # seconds
 steps = int(tspan/dt)
 
 ## Clohessy-Wiltshire state
