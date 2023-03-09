@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt 
 
 from kinematics.transformations import mat_exp_se3
+
 import modern_robotics as mr 
 """
 Exemple 
@@ -23,9 +24,9 @@ S3 = np.array([1,0,0,0,2,-2])
 
 # Joint value µ
 # TODO something is wrong here
-q1 = 0*np.pi/180
-q2 = 45*np.pi/180
-q3 = 45*np.pi/180
+q1 = 75*np.pi/180
+q2 = 32*np.pi/180
+q3 = 28*np.pi/180
 
 print("Twists")
 V1=S1*q1
@@ -103,5 +104,13 @@ print("Check MR - Tb")
 print(Tb_mr)
 
 ax.scatter(Tb_mr[0,3],Tb_mr[1,3],Tb_mr[2,3],c='g', marker='o', s=50)
+
+
+from kinematics.kinematics import space_forward_kinematics as fk
+
+V = np.array([V1,V2,V3])
+
+print((Tb_mr-fk(M, V)).round())
+
 
 plt.show()

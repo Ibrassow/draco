@@ -47,10 +47,6 @@ def check_rotation_matrix(mtx):
         return True
     
 
-
-
-
-
 def mat_exp_se3_from_units(theta, w, v):
     """
     Returns the matrix exponential of an se(3) representation (se(3) to SE(3))
@@ -96,7 +92,7 @@ def twist_to_se3(twist):
     """
     mat_se3 = np.zeros((4,4))
     mat_se3[0:3,0:3] = skew_symmetric(twist[:3])
-    mat_se3[0:3, 3] = twist[3:6]
+    mat_se3[:3, 3] = twist[3:6]
     return mat_se3
 
 def se3_to_twist(mat_se3):
@@ -112,10 +108,24 @@ def HT_to_RP(T):
 
 def RP_to_HT(R, p):
     T = np.zeros((4,4))
-    T[0: 3, 0: 3] = R
-    T[0: 3, 3] = p
+    T[:3, :3] = R
+    T[:3, 3] = p
     T[3,3] = 1
     return T
+
+
+
+def adjoint(ht):
+    """
+    Computes the adjoint representation (6x6) of an homogeneous transformation matrix (SE(3))
+    """
+    R, p = HT_to_RP(ht)
+    adj = np.zeros((6,6))
+    adj[:3,:3] = R
+    adj[3:,3:] = R
+    adj[3:,:3] = skew_symmetric(p) @ R
+
+    return adj
 
 
 
