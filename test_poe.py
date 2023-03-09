@@ -1,7 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt 
 
-from kinematics.mapping import exp_map_se3
+from kinematics.transformations import mat_exp_se3
+import modern_robotics as mr 
 """
 Exemple 
 
@@ -18,26 +19,28 @@ print(M)
 # Screw axis of the joints
 S1 = np.array([0,0,1,0,0,0])
 S2 = np.array([1,0,0,0,2,0])
-S3 = np.array([1,0,0,0,2/np.sqrt(2),-2/np.sqrt(2)])
+S3 = np.array([1,0,0,0,2,-2])
 
 # Joint value µ
 # TODO something is wrong here
 q1 = 0*np.pi/180
-q2 = 0*np.pi/180
-q3 = 0*np.pi/180
+q2 = 45*np.pi/180
+q3 = 45*np.pi/180
 
-"""print(exp_map_se3(S1*q1))
-print(exp_map_se3(S2*q2))
-print(exp_map_se3(S3*q3))"""
-
+print("Twists")
 V1=S1*q1
 V2=S2*q2
 V3=S3*q3
+print(V1)
+print(V2)
+print(V3)
+
+
 
 
 # Final configuration of the B frame 
 print("Tb")
-Tb = exp_map_se3(S1*q1) @ exp_map_se3(S2*q2) @ exp_map_se3(S3*q3) @ M
+Tb = mat_exp_se3(S1*q1) @ mat_exp_se3(S2*q2) @ mat_exp_se3(S3*q3) @ M
 print(Tb)
 
 
@@ -60,8 +63,8 @@ M3 = np.array([[1,0,0,0],
 
 
 T_01 = M1
-T_02 = exp_map_se3(S1*q1) @ M2
-T_03 = exp_map_se3(S2*q2) @ exp_map_se3(S1*q1) @ M3
+T_02 = mat_exp_se3(S1*q1) @ M2
+T_03 = mat_exp_se3(S1*q1) @ mat_exp_se3(S2*q2) @ M3
 
 
 
@@ -70,6 +73,9 @@ T_03 = exp_map_se3(S2*q2) @ exp_map_se3(S1*q1) @ M3
 X = np.array([0, T_01[0,3], T_02[0,3], T_03[0,3], Tb[0,3]])
 Y = np.array([0, T_01[1,3], T_02[1,3], T_03[1,3], Tb[1,3]])
 Z = np.array([0, T_01[2,3], T_02[2,3], T_03[2,3], Tb[2,3]])
+
+
+
 print("X",X)
 print("Y",Y)
 print("Z",Z)
@@ -86,5 +92,16 @@ ax.set_zlim3d([0, 8])
 
 
 ax.plot3D(X, Y, Z, '-bo', linewidth=2)
+
+
+Slist = np.array([S1,S2,S3])
+print('SLIST', Slist)
+thetalist = np.array([q1,q2,q3])
+
+Tb_mr = mr.FKinSpace(M, Slist[:3].T, thetalist[:3])
+print("Check MR - Tb")
+print(Tb_mr)
+
+ax.scatter(Tb_mr[0,3],Tb_mr[1,3],Tb_mr[2,3],c='g', marker='o', s=50)
 
 plt.show()
