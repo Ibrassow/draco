@@ -89,7 +89,7 @@ def d_clohessy_wilthsire(x, u, dt=0.1, mc=1, mu=3.986004418 * 10**(14), a=421640
                 [0,0,-n**2,0,0,0]])
     
 
-    B = np.array([[0,0,0],
+    B = (1/mc)*np.array([[0,0,0],
                   [0,0,0],
                   [0,0,0],
                   [1,0,0],
@@ -106,7 +106,38 @@ def d_clohessy_wilthsire(x, u, dt=0.1, mc=1, mu=3.986004418 * 10**(14), a=421640
     Bd = exp_mx[0:6,6:9]
 
 
-    return np.dot(Ad,x) + (1/mc)*np.dot(Bd, u)
+    return np.dot(Ad,x) + np.dot(Bd, u)
 
+
+
+def get_cw_discrete_dynamics(dt, mc=1, mu=3.986004418 * 10**(14), a=42164000):
+
+    n = np.sqrt(mu/a**3)
+
+    A = np.array([[0,0,0,1,0,0], 
+                [0,0,0,0,1,0],
+                [0,0,0,0,0,1],
+                [3*n**2,0,0,0,2*n,0],
+                [0,0,0,-2*n,0,0],
+                [0,0,-n**2,0,0,0]])
+    
+
+    B = (1/mc)*np.array([[0,0,0],
+                  [0,0,0],
+                  [0,0,0],
+                  [1,0,0],
+                  [0,1,0],
+                  [0,0,1]])
+    
+    dd = np.zeros((9,9))
+    dd[0:6,0:6] = A
+    dd[0:6,6:9] = B
+    exp_mx = expm(dd*dt)
+
+    Ad = exp_mx[0:6,0:6]
+    Bd = exp_mx[0:6,6:9]
+
+
+    return Ad, Bd
 
 
