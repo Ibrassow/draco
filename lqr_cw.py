@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt 
-from models.orbital_models import d_clohessy_wilthsire, get_cw_discrete_dynamics
+from models.astrodynamics import d_clohessy_wilthsire, get_cw_discrete_dynamics
 
 from control.lqr import dlqr
 

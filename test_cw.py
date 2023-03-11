@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt 
-from models.orbital_models import d_clohessy_wilthsire, clohessy_wilthsire
+from models.astrodynamics import d_clohessy_wilthsire, clohessy_wilthsire
 from dynamics.integrator import rk4
 
 
