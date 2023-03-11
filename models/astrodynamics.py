@@ -141,3 +141,25 @@ def get_cw_discrete_dynamics(dt, mc=1, mu=3.986004418 * 10**(14), a=42164000):
     return Ad, Bd
 
 
+
+def semi_major_axis(rp, ra):
+    """
+    rp: periapsis -> radius from the central body to the nearest point on the orbital path
+    ra: apoapsis -> radius from the central to the farthest point on the orbital path
+    semi major axis: longest semi-diameter of an ellipse. 
+    
+    """
+    return (rp+ra)/2
+
+def orbital_period(sma, mu):
+    T = 2 * np.pi * np.sqrt((sma**3)/mu)
+    return T
+
+
+def eccentricity(rp, ra):
+
+    ecc = 1 - rp/semi_major_axis(rp, ra)
+
+    return ecc
+
+
