@@ -141,6 +141,17 @@ def L(q):
     L[1:,1:] = q[0]*np.eye(3) + skew_symmetric(q[1:])
     return L
 
+def R(q):
+    """
+    Right-multiply
+    """
+    R = np.zeros((4,4))
+    R[0,0] = q[0]
+    R[0,1:] = -q[1:].T
+    R[1:,0] = q[1:]
+    R[1:,1:] = q[0]*np.eye(3) - skew_symmetric(q[1:])
+    return R
+
 
 def conj(q):
     """
