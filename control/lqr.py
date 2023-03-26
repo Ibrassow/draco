@@ -13,13 +13,6 @@ import numpy as np
 import scipy.linalg
 
 
-
-"""def lqr(A, B, Q, R, N):
-
-
-    return K"""
-
-
 def dlqr(A, B, Q, R, N=0):
     """
     Computes the optimal gain matrix K such that the state-feedback law u[k] = - K x[k] minimizes

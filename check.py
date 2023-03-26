@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt 
 
-from kinematics.mapping import exp_map_se3, vec_to_se3, se3_to_vec
+from kinematics.transformations import twist_to_se3
 import modern_robotics as mr 
 
 V = np.array([1, 2, 3, 4, 5, 6])
@@ -13,9 +13,8 @@ mat = np.array([[0,          0,           0,          0],
 
 V = mr.se3ToVec(mat)
 
-#mat_mm = mr.VecTose3(V)
-mm = mr.MatrixExp6(mat)
-ii = exp_map_se3(V)
+mm = mr.VecTose3(V)
+ii = twist_to_se3(V)
 
 print("Now comparison")
 print(mm)

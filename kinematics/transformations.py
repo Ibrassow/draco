@@ -127,9 +127,48 @@ def adjoint(ht):
 
     return adj
 
+### Quaternions 
+# https://roboticexplorationlab.org/papers/planning_with_attitude.pdf
+
+def L(q):
+    """
+    Left-multiply
+    """
+    L = np.zeros((4,4))
+    L[0,0] = q[0]
+    L[0,1:] = -q[1:].T
+    L[1:,0] = q[1:]
+    L[1:,1:] = q[0]*np.eye(3) + skew_symmetric(q[1:])
+    return L
 
 
-if __name__ == '__main__':
+def conj(q):
+    """
+    Inverse of a unit quaternion is its conjugate, i.e. same quaternion with a negated vector part 
+    """
+    q[1:] = - q[1:]
+    return q
 
-    #dd
-    u = None
+def rotm2quat(r):
+    q = np.zeros(4)
+    q[0] = 0.5 * np.sqrt(1 + r[0,0] + r[1,1] + r[2,2])
+    q[1] = (1/(4*q[0])) * (r[2][1] - r[1][2])
+    q[2] = (1/(4*q[0])) * (r[0][2] - r[2][0])
+    q[3] = (1/(4*q[0])) * (r[1][0] - r[0][1])
+    return q
+
+def quat2rotm(q):
+    R = np.zeros((3,3))
+    # TODO
+    return R
+
+
+
+def angular_vel_from_quat(q1, q2, dt):
+    """
+    https://mariogc.com/post/angular-velocity-quaternions/
+    """
+    return (2 / dt) * np.array([
+        q1[0]*q2[1] - q1[1]*q2[0] - q1[2]*q2[3] + q1[3]*q2[2],
+        q1[0]*q2[2] + q1[1]*q2[3] - q1[2]*q2[0] - q1[3]*q2[1],
+        q1[0]*q2[3] - q1[1]*q2[2] + q1[2]*q2[1] - q1[3]*q2[0]])
