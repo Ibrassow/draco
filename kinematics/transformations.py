@@ -183,3 +183,14 @@ def angular_vel_from_quat(q1, q2, dt):
         q1[0]*q2[1] - q1[1]*q2[0] - q1[2]*q2[3] + q1[3]*q2[2],
         q1[0]*q2[2] + q1[1]*q2[3] - q1[2]*q2[0] - q1[3]*q2[1],
         q1[0]*q2[3] - q1[1]*q2[2] + q1[2]*q2[1] - q1[3]*q2[0]])
+
+
+
+def angvel_from_quat(q1, q2, dt):
+    # TODO - must ensure they are diff
+    delta_q = L(conj(q1)) @ q2
+    delta_q = delta_q / np.linalg.norm(delta_q)
+
+    angle = 2 * np.arccos(delta_q[0])
+    axis = delta_q[1:] / np.sin(0.5 * angle)
+    return axis * angle / dt
