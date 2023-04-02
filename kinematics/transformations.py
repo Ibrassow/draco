@@ -157,7 +157,9 @@ def conj(q):
     """
     Inverse of a unit quaternion is its conjugate, i.e. same quaternion with a negated vector part 
     """
-    q[1:] = - q[1:]
+    qr = np.zeros(4)
+    qr[0] = q[0]
+    qr[1:] = - q[1:]
     return q
 
 def rotm2quat(r):
@@ -194,3 +196,10 @@ def angvel_from_quat(q1, q2, dt):
     angle = 2 * np.arccos(delta_q[0])
     axis = delta_q[1:] / np.sin(0.5 * angle)
     return axis * angle / dt
+
+
+def inv_mrp(q):
+    """
+    Modified Rodriguez parameter inverse mapping
+    """
+    return (2 / (1/q[0])) * q[1:]
