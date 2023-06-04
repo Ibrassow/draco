@@ -1,7 +1,7 @@
 import numpy as np
 import quaternion
 
-from transformations import *
+from .transformations import *
 
 
 
@@ -16,69 +16,72 @@ def cubic_time_scaling(Tf, t):
     return s,sdot,sdotdot
 
 
-def straight_line_interpolation_joint_space(qi, qf, Tf, N_points):
+
+def straight_line_interpolation_joint_space(qi, qf, Tf, N_points, dim=6):
     diff = Tf/(N_points-1)
-    waypoints = np.zeros((N_points,6*3)) ## for each pos, you have q, dq, dqq
+    waypoints = np.zeros((N_points,dim*3)) ## for each pos, you have q, dq, dqq
 
     for i in range(N_points):
         s, sdot, sdotdot = cubic_time_scaling(Tf, i*diff)
-        waypoints[i][0:6] = s * qf + (1 - s) * qi
-        waypoints[i][6:12] = sdot * (qf-qi)
-        waypoints[i][12:18] = sdotdot * (qf-qi)
+        waypoints[i][0:1*dim] = s * qf + (1 - s) * qi
+        waypoints[i][dim:2*dim] = sdot * (qf-qi)
+        waypoints[i][2*dim:3*dim] = sdotdot * (qf-qi)
     return waypoints
 
 
-def generate_straight_joint_space_random_traj(qi, Tf, N_points):
+def generate_straight_joint_space_random_traj(qi, Tf, N_points, dim=6):
     qf = -np.random.rand(6)*np.pi
-    return straight_line_interpolation_joint_space(qi, qf, Tf, N_points)
-
-
+    return straight_line_interpolation_joint_space(qi, qf, Tf, N_points, dim=dim)
 
 
 ### Straight line paths 
-def generate_straight_line_cartesian_waypoints(current_pose, desired_pose, Tf, N_points, quat=False):
+def straight_line_pose_waypoints(current_pose, desired_pose, Tf, N_points, quat=True):
     """
     Point-to-point trajectory generator in cartesian space.
     Generates a straight line trajectory between the current pose and the desired pose as a list of waypoints
+    current_pose, desired_pose: np.array([x, y, z, quaternion_4d(w,x,y,z)]) 
     TODO make sure that the trajectory is part of the manipulator's workspace.
-    
     """
-
-    if quat==False:
-        pstart = current_pose[0:3, 3]
-        qstart = rotm2quat(current_pose[:3,:3])
-        pend = desired_pose[0:3, 3]
-        qend = rotm2quat(desired_pose[:3,:3])
-    else:
+    if quat:
         pstart = current_pose[:3]
         qstart = current_pose[-4:]
         pend = desired_pose[:3]
         qend = desired_pose[-4:]
+    else:
+        pstart = current_pose[0:3, 3]
+        qstart = rotm2quat(current_pose[:3,:3])
+        pend = desired_pose[0:3, 3]
+        qend = rotm2quat(desired_pose[:3,:3])
+
 
     diff = Tf/(N_points-1)
 
-    waypoints = np.zeros((N_points,13))
-    """waypoints = {
-    "pos": np.zeros((N_points, 3)),
-    "vel": np.zeros((N_points, 3)),
-    "acc": np.zeros((N_points, 3)),
-    "quat": np.zeros((N_points, 4))
-    }"""
+    waypoints = {
+    "pose": np.zeros((N_points, 7)),
+    "vel": np.zeros((N_points, 6)),
+    "acc": np.zeros((N_points, 6)),
+    }
 
 
     for i in range(N_points):
         s, sdot, sdotdot = cubic_time_scaling(Tf, i*diff)
-        waypoints[i][0:3] = s * pend + (1 - s) * pstart
-        waypoints[i][3:6] = sdot * (pend-pstart)
-        waypoints[i][6:9] = sdotdot * (pend-pstart)
-        ## quaternions, be careful
-        ## Using SLERP here - https://en.wikipedia.org/wiki/Slerp#Quaternion_Slerp
-        #waypoints[i][3:] = (L(qend) @ conj(qstart))**(s) @ qstart
+        waypoints['pose'][i][0:3] = s * pend + (1 - s) * pstart
+        waypoints['vel'][i][0:3] = sdot * (pend-pstart)
+        waypoints['acc'][i][0:3] = sdotdot * (pend-pstart)
+
+        ## Using SLERP here - https://en.wikipedia.org/wiki/Slerp#Quaternion_Slerp --> constant ang vel
         qq = quaternion.slerp_evaluate(quaternion.as_quat_array(qstart), quaternion.as_quat_array(qend), s)
-        waypoints[i][9] = qq.w
-        waypoints[i][10] = qq.x
-        waypoints[i][11] = qq.y
-        waypoints[i][12] = qq.z
+        qq = np.array([qq.w, qq.x, qq.y, qq.z])
+
+        waypoints['pose'][i][3:] = qq
+
+        
+
+    for i in range(N_points-1):
+        waypoints['vel'][i][3:] = angular_vel_from_quat(waypoints['pose'][i][3:], waypoints['pose'][i+1][3:], diff)
+        waypoints['acc'][i][3:] = (waypoints['vel'][i][3:] - waypoints['vel'][i-1][3:]) / diff
+        #print("vel", waypoints['vel'][i][3:])
+        #print("acc", waypoints['acc'][i][3:])
 
     return waypoints
 
@@ -87,23 +90,23 @@ def generate_straight_line_cartesian_waypoints(current_pose, desired_pose, Tf, N
 
 
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
+
+    import matplotlib.pyplot as plt
 
 
-    N = 10
-    qi = np.array([0,0,0,0,0,0])
-    qf = np.deg2rad(np.array([45,-90,30,-90,0,0]))
-    Tf = 3
+    ss = np.array([1,2,3,1, 0, 0, 0])
+    ee = np.array([7,6,9,0.7071068, 0, 0.7071068, 0])
 
-    B = straight_line_interpolation_joint_space(qi, qf, Tf, N)
+   
+    Np = 20
+    wp = straight_line_pose_waypoints(ss, ee, 10, Np)
 
-    print(B.shape)
+    plt.plot(wp['acc'][:, 3:])
+    print(wp['acc'][:, 3:])
+    plt.show()
 
 
-    curr_pos = np.array([1,1,1])
-    curr_quat = np.array([1,0,0,0])
 
-    target_pose = np.array([3,2,3, 0.7071068, 0, 0.7071068, 0])
 
-    wp_list = generate_straight_line_cartesian_waypoints(np.concatenate([curr_pos, curr_quat]), target_pose, Tf, N, quat=True)
-    print(wp_list)

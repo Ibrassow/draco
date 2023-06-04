@@ -18,18 +18,20 @@ earth = {
 
 
 
-"""def central_two_body(state, u):
-    ""
+def central_two_body(state, u):
+    """
     Version of the two-body problem treating one body as an immobile source of a force acting on the other.
     This assumes the central object is much more massive than the moving one.
 
     'state' is a 6x1 vector of x,y,z positions and velocities of the orbiting body. 
-    ""
+    """
 
     r = state[:3]
     a = - earth['mu'] * r / np.linalg.norm(r)**3
 
-    return np.array([ state[3], state[4], state[5], a[0], a[1], a[2] ])"""
+    return np.array([ state[3], state[4], state[5], a[0], a[1], a[2] ])
+
+
 
 
 
@@ -58,9 +60,9 @@ def clohessy_wilthsire(x, u, t, mu=3.986004418 * 10**(14), a=42164000):
                 [0,0,-n*np.sin(n*t),0,0,np.cos(n*t)]])
     
 
-    x_dot = np.dot(A,x)
+    xx = np.dot(A,x)
 
-    return x_dot 
+    return xx
 
 
 
@@ -147,19 +149,46 @@ def semi_major_axis(rp, ra):
     rp: periapsis -> radius from the central body to the nearest point on the orbital path
     ra: apoapsis -> radius from the central to the farthest point on the orbital path
     semi major axis: longest semi-diameter of an ellipse. 
-    
     """
-    return (rp+ra)/2
+    return (rp + ra) / 2
 
 def orbital_period(sma, mu):
-    T = 2 * np.pi * np.sqrt((sma**3)/mu)
-    return T
-
+    """
+    sma: semi major axis -> longest semi-diameter of an ellipse.
+    mu: standard gravitational parameter of the central body
+    """
+    return 2.0 * np.pi * np.sqrt((sma ** 3) / mu)
 
 def eccentricity(rp, ra):
-
-    ecc = 1 - rp/semi_major_axis(rp, ra)
-
+    """
+    rp: periapsis -> radius from the central body to the nearest point on the orbital path
+    ra: apoapsis -> radius from the central to the farthest point on the orbital path
+    """
+    semi_major_axis_val = semi_major_axis(rp, ra)
+    ecc = 1 - rp / semi_major_axis_val
     return ecc
 
+def scaled_mu(sma, T, mu):
+    """
+    sma: semi major axis -> longest semi-diameter of an ellipse.
+    T: orbital period
+    mu: standard gravitational parameter of the central body
+    """
+    return ((T ** 2) / (sma ** 3)) * mu
 
+def instantaneous_orbital_speed(mu, radius, sma):
+    """
+    mu: standard gravitational parameter of the central body
+    radius: current radius of the orbiting body
+    sma: semi major axis -> longest semi-diameter of an ellipse.
+    """
+    return np.sqrt(mu * ((2 / radius) - (1 / sma)))
+
+def orbital_mean_motion(T):
+    """
+    T: orbital period
+    mean motion (represented by n) is the angular speed required for a body to complete one orbit,
+    assuming constant speed in a circular orbit which completes in the same time as the variable speed, elliptical orbit of the actual body.
+    Return: n [rad/time]
+    """
+    return 2 * np.pi / T

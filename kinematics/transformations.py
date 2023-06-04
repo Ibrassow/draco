@@ -6,7 +6,6 @@ def skew_symmetric(w):
     Returns the skew symmetric form of a numpy array.
     w --> [w]
     """
-    #TODO check
     
     return np.array([[0, -w[2], w[1]], 
                      [w[2], 0, -w[0]], 
@@ -152,7 +151,6 @@ def R(q):
     R[1:,1:] = q[0]*np.eye(3) - skew_symmetric(q[1:])
     return R
 
-
 def conj(q):
     """
     Inverse of a unit quaternion is its conjugate, i.e. same quaternion with a negated vector part 
@@ -160,7 +158,7 @@ def conj(q):
     qr = np.zeros(4)
     qr[0] = q[0]
     qr[1:] = - q[1:]
-    return q
+    return qr
 
 def rotm2quat(r):
     q = np.zeros(4)
@@ -168,12 +166,8 @@ def rotm2quat(r):
     q[1] = (1/(4*q[0])) * (r[2][1] - r[1][2])
     q[2] = (1/(4*q[0])) * (r[0][2] - r[2][0])
     q[3] = (1/(4*q[0])) * (r[1][0] - r[0][1])
-    return q
+    return np.array(q)
 
-def quat2rotm(q):
-    R = np.zeros((3,3))
-    # TODO
-    return R
 
 
 
@@ -198,8 +192,44 @@ def angvel_from_quat(q1, q2, dt):
     return axis * angle / dt
 
 
-def inv_mrp(q):
+
+
+
+def mrp_from_quat(q):
     """
     Modified Rodriguez parameter inverse mapping
     """
-    return (2 / (1/q[0])) * q[1:]
+    return q[1:3] / (1 + q[0])
+
+def quat_from_mrp(mrp):
+    q = np.concatenate(([1 - np.dot(mrp,mrp)], 2*mrp))
+    return (1/(1+np.dot(mrp,mrp))) * q
+
+
+def dcm_from_q(q):
+    norm = np.linalg.norm(q)
+    q0, q1, q2, q3 = q / norm if norm != 0 else q
+
+    # DCM
+    Q = np.array([
+        [2*q1**2 + 2*q0**2 - 1,   2*(q1*q2 - q3*q0),   2*(q1*q3 + q2*q0)],
+        [2*(q1*q2 + q3*q0),       2*q2**2 + 2*q0**2 - 1,   2*(q2*q3 - q1*q0)],
+        [2*(q1*q3 - q2*q0),       2*(q2*q3 + q1*q0),   2*q3**2 + 2*q0**2 - 1]
+    ])
+
+    return Q
+
+
+def quat2axisangle(q):
+    """
+    quat wxyz
+    """
+    axis = np.zeros(3)
+    angle = 2 * np.arccos(q[0])
+    axis = q[1:]/np.sqrt(1 - q[0]*q[0])
+    return axis*angle
+
+
+
+
+

@@ -1,13 +1,4 @@
-"""
 
-TODO
-- LQR: Riccati 
-- Test w/ CW equations
-- Test with 2 link manipulator in joint space 
-- Test with hovering 
-
-
-"""
 
 import numpy as np
 import scipy.linalg

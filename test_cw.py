@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt 
 from models.astrodynamics import d_clohessy_wilthsire, clohessy_wilthsire
-from dynamics.integrator import rk4
+from models.integrator import rk4
 
 
 ## Simulation parameters
