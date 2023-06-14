@@ -92,6 +92,28 @@ def attitude_mrp_rbd(params, x, tau):
     return np.concatenate((mrp_dot, omega_dot))
 
 
+def quat_kinematics(q, ω):
+    """
+    q: (w,x,y,z)
+    """
+    H = np.vstack((np.zeros((1, 3)), np.eye(3)))
+    q̇ = 0.5 * L(q) * H * ω
+    return q̇
+
+
+
+def attitude_quat_rbd(params, x, τ):
+    """
+    Rotational dynamics only
+    """
+    q = x[0:4] # Attitude (quaternions)
+    ω = x[4:7] # Angular Velocity
+    qdot = quat_kinematics(q, ω)
+    ωdot = np.linalg.inv(params['J']).dot(τ - skew_symmetric(ω) * params.J * ω) 
+    return np.concatenate((qdot , ωdot))
+
+
+
 
 def nonlinear_relative_keplerian_dynamics(params, X, F):
     x = X[0]
